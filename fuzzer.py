@@ -2,13 +2,13 @@ file_list = ['./fuzz/1.pdf', './fuzz/2.pdf', './fuzz/3.pdf', './fuzz/4.pdf',
              './fuzz/5.pdf', './fuzz/6.pdf', './fuzz/7.pdf', './fuzz/8.pdf',
              './fuzz/9.pdf', './fuzz/10.pdf', './fuzz/11.pdf', './fuzz/12.pdf',
              './fuzz/13.pdf','./fuzz/14.pdf','./fuzz/15.pdf','./fuzz/16.pdf',
-             './fuzz/17.pdf', './fuzz/18.pdf',
+             './fuzz/17.pdf', './fuzz/18.pdf', './fuzz/19.pdf'
              ]
  
 apps = ['/usr/bin/xpdf']
  
 fuzzFactor = 250
-num_tests = 100
+num_tests = 500
  
 import math
 import random
@@ -28,7 +28,8 @@ file_crash_count = dict((name[7:], 0) for name in file_list)
  
 start = time.time()
 for i in range(num_tests):
-    file_choice = random.choice(file_list)
+    #file_choice = random.choice(file_list)
+    file_choice = './fuzz/3.pdf'
     fuzz_output = './fuzz/fuzzed.pdf'
     app = apps[0]
     buf = bytearray(open(file_choice, 'rb').read())
@@ -55,9 +56,10 @@ for i in range(num_tests):
         crash += 1
         file_choice = file_choice[7:]   # get rid of file path
         file_crash_count[file_choice] += 1
-        # Save crashed file as new name with its crash count
-        fuzz_output = 'fuzzCrash_' + str(crash) + '.pdf'
-        log.write('File name: ' + fuzz_output + '\n')
+        # Save crashed file with new name including its crash count
+        new_name = './fuzz/fuzzCrash_' + str(crash) + '.pdf'
+        open(new_name, 'wb').write(buf)
+        log.write('File name: ' + new_name[7:] + '\n')
         log.write('Original file: ' + file_choice + '\n')
         log.write('Exit code: ' + str(crashed) + '\n\n')
     count += 1
