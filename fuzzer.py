@@ -28,8 +28,7 @@ file_crash_count = dict((name[7:], 0) for name in file_list)
  
 start = time.time()
 for i in range(num_tests):
-    #file_choice = random.choice(file_list)
-    file_choice = './fuzz/3.pdf'
+    file_choice = random.choice(file_list)
     fuzz_output = './fuzz/fuzzed.pdf'
     app = apps[0]
     buf = bytearray(open(file_choice, 'rb').read())
