@@ -1,8 +1,12 @@
-# Author: JFreegman@gmail.com
+# Author: JFreegman
+# Contact: JFreegman@gmail.com
 # Date: July 25, 2012
+# v1.1
+# Update from v1.0: pattern recognition improved and optimized
 
-# This is the BUTT DESTROYER 9001, a rock paper scissors playing bot written for
-# Udacity's CS212 rock paper scissors tournament.
+# This is the BUTT DESTROYER 9001 v1.1, a rock paper scissors playing bot 
+# originally written for Udacity's CS212 rock, paper scissors tournament and 
+# adapted for RPSContest.com.
 
 # All code is written from scratch. The general idea is based off Iocaine Powder 
 # by Dan Egnor (http://ofb.net/~egnor/iocaine.html).
@@ -23,9 +27,10 @@ STRAT_SUCCESS = {'freq20': 0, 'c1_freq20': 0, 'c2_freq20': 0, 'hist': 0, 'random
                  'freq100': 0, 'freqtot': 0, 'c1_freqtot': 0, 'c2_freqtot': 0}
 
 # Keeps track of opponent move patterns
-PATTERNS = {}
+PATTERNS = ""
 
 def player(my_moves, opp_moves):
+    global PATTERNS
     # first move is always random
     if not my_moves:
         STRAT_HISTORY.append({})
@@ -42,7 +47,7 @@ def player(my_moves, opp_moves):
         elif last_strats[s] == lose_opp:
             STRAT_SUCCESS[s] -= 1
 
-    update_patterns(opp_moves, last_opp_move)
+    PATTERNS += last_opp_move
 
     # get opponent's most probable move based on frequency (last 20, 100 and
     # full history) and history pattern matches
@@ -52,7 +57,7 @@ def player(my_moves, opp_moves):
     opp_prob_f_100 = max(opp_freq100, key=opp_freq100.get)
     opp_freqtot = get_probs(opp_moves, len(opp_moves))
     opp_prob_f_tot = max(opp_freqtot, key=opp_freqtot.get)
-    opp_prob_h = get_history_match(opp_moves)
+    opp_prob_h = get_history_match()
 
     # naive moves for each strategy
     my_move_freq20 = winning_move(opp_prob_f_20)
@@ -87,32 +92,20 @@ def player(my_moves, opp_moves):
     move = strats[strat]
     STRAT_HISTORY.append(strats)
     return move
-
-def update_patterns(hist, last_move):
-    """
-    updates pattern history with all possible new sequences 
-    based on last 20 moves
-    """
-    k = len(hist)
-    t_hist = tuple(hist)
-    PATTERNS[t_hist[-20:-1]] = last_move
-    for i in xrange(k-20, k+1):
-        t = t_hist[i:-1]
-        if t not in PATTERNS:
-            PATTERNS[t] = last_move
-    return None
-
-def get_history_match(moves):
+    
+def get_history_match():
     """
     Searches moves history and tries to find previous patterns that match
     the last n moves (n starting at half the number of moves and decrementing).
     If match found, returns the move made after the last pattern match.
     """
-    start = len(moves) / 2
-    end = start * 2 + 1
+    start = len(PATTERNS) - min(len(PATTERNS) / 2, 200)
+    end = len(PATTERNS)
     for i in xrange(start, end):
-        if tuple(moves[i:]) in PATTERNS:
-            return PATTERNS[tuple(moves[i:])]
+        partition = PATTERNS[i:end]
+        match = PATTERNS[:-1].find(partition)
+        if match != -1:
+            return PATTERNS[match+len(partition)]
     return random_weapon()
 
 def get_probs(total_moves, n):
@@ -122,9 +115,9 @@ def get_probs(total_moves, n):
     """
     last = get_move_freq(total_moves[-n:])
     probs = {}
-    probs['rock'] = float(last['rock']) / last['total'] * 100
-    probs['scissors'] = float(last['scissors']) / last['total'] * 100
-    probs['paper'] = float(last['paper']) / last['total'] * 100
+    probs['R'] = float(last['R']) / last['total'] * 100
+    probs['S'] = float(last['S']) / last['total'] * 100
+    probs['P'] = float(last['P']) / last['total'] * 100
     return probs
 
 def get_move_freq(moves):
@@ -132,15 +125,15 @@ def get_move_freq(moves):
     Returns a dictionary containing frequencies of moves, as well as
     a count for the total number of moves
     """
-    mov_freq = {'rock': 0, 'paper': 0, 'scissors': 0}
+    mov_freq = {'R': 0, 'P': 0, 'S': 0}
     count = 0
     for move in moves:
-        if move == 'rock':
-            mov_freq['rock'] += 1
-        elif move == 'paper':
-            mov_freq['paper'] += 1
-        elif move == 'scissors':
-            mov_freq['scissors'] += 1
+        if move == 'R':
+            mov_freq['R'] += 1
+        elif move == 'P':
+            mov_freq['P'] += 1
+        elif move == 'S':
+            mov_freq['S'] += 1
         else:
             raise ValueError, 'Invalid move'
         count += 1
@@ -149,17 +142,17 @@ def get_move_freq(moves):
 
 def winning_move(m):
     "Returns the move that beats m"
-    d = {'rock': 'paper', 'paper': 'scissors', 'scissors': 'rock'}
+    d = {'R': 'P', 'P': 'S', 'S': 'R'}
     return d[m]
     raise ValueError, 'Invalid move'
 
 def losing_move(m):
     "Returns the move that loses to m"
-    d = {'rock': 'scissors', 'paper': 'rock', 'scissors': 'paper'}
+    d = {'R': 'S', 'P': 'R', 'S': 'P'}
     return d[m]
     raise ValueError, 'Invalid move'
 
 def random_weapon():
-    "Randomly chooses rock, paper or scissors"
-    moves = ['rock', 'paper', 'scissors']
+    "Randomly chooses R, P or S"
+    moves = ['R', 'P', 'S']
     return random.choice(moves)
