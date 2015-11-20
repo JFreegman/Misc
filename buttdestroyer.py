@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------------
 #
 # Author: JFreegman
-# Contact: JFreegman@gmail.com
+# Contact: JFreegman [at] gmail [dot] com
 # Date: July 30, 2012
 # v3.1
 # 
